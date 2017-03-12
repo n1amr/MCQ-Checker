@@ -98,9 +98,6 @@ def train():
     except KeyboardInterrupt:
         pass
 
-    import IPython
-    IPython.embed()
-
 
 def test():
     img_model_filename = 'data/model-answer.png'
@@ -127,9 +124,6 @@ def test():
 
     except KeyboardInterrupt:
         pass
-
-    import IPython
-    IPython.embed()
 
 
 def main(*argv):

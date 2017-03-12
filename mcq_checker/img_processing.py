@@ -21,14 +21,22 @@ def load_image(path):
     return cv2.imread(path, cv2.IMREAD_GRAYSCALE)
 
 
+kp1, des1 = None, None
+
 def deskew_image(img_original, img_skewed, debug=False):
     surf = cv2.xfeatures2d.SURF_create(400)
-    kp1, des1 = surf.detectAndCompute(img_original, None)
+
+    global kp1, des1
+    if kp1 is None:
+        kp1, des1 = surf.detectAndCompute(img_original, None)
     kp2, des2 = surf.detectAndCompute(img_skewed, None)
 
-    FLANN_INDEX_KDTREE = 0
-    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-    search_params = dict(checks=50)
+    # FLANN_INDEX_KDTREE = 0
+    FLANN_INDEX_KDTREE = 1
+    # index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=2)
+    # search_params = dict(checks=50)
+    search_params = dict(checks=5)
     flann = cv2.FlannBasedMatcher(index_params, search_params)
     matches = flann.knnMatch(des1, des2, k=2)
 
