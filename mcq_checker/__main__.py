@@ -43,9 +43,9 @@ def calculate_marks(img_model_filename, img_sample_filename, debug=False):
     img_model = threshold_image(img_model)
     # show(img_model, 'model: thresholded')
 
-    img_model = dilate_image(img_model, (13, 13))
+    img_model = dilate_image(img_model, (11, 11))
     # show(img_model, 'model: dilated 13x13')
-    img_model = erode_image(img_model, (13, 13))
+    img_model = erode_image(img_model, (14, 14))
     # show(img_model, 'model: eroded 13x13')
 
     # find common
@@ -54,14 +54,14 @@ def calculate_marks(img_model_filename, img_sample_filename, debug=False):
     img_sample_tmp = threshold_image(img_sample_tmp)
     show(img_sample_tmp, 'sample: thresholded')
 
-    img_sample_tmp = erode_image(img_sample_tmp, (5, 5))
+    img_sample_tmp = erode_image(img_sample_tmp, (5, 6))
     show(img_sample_tmp, 'sample: eroded 5x5')
-    img_sample_tmp = dilate_image(img_sample_tmp, (5, 5))
+    img_sample_tmp = dilate_image(img_sample_tmp, (7, 6))
     show(img_sample_tmp, 'sample: dilated 5x5')
 
-    img_sample_tmp = dilate_image(img_sample_tmp, (13, 13))
+    img_sample_tmp = dilate_image(img_sample_tmp, (7, 5))
     show(img_sample_tmp, 'sample: dilated 13x13')
-    img_sample_tmp = erode_image(img_sample_tmp, (13, 13))
+    img_sample_tmp = erode_image(img_sample_tmp, (5, 5))
     show(img_sample_tmp, 'sample: eroded 13x13')
 
     img_common = and_image(img_model, img_sample_tmp)
@@ -92,10 +92,10 @@ def calculate_marks(img_model_filename, img_sample_filename, debug=False):
     # img_valid = erode_image(img_valid, (7, 7))
     # show(img_valid, 'valid: eroded 7x7')
 
-    img_valid = erode_image(img_valid, (7, 7))
+    img_valid = erode_image(img_valid, (11, 11))
     show(img_valid, 'valid: eroded 7x7')
-    img_valid = erode_image(img_valid, (7, 7))
-    show(img_valid, 'valid: eroded 7x7')
+    # img_valid = erode_image(img_valid, (7, 7))
+    # show(img_valid, 'valid: eroded 7x7')
     img_valid = dilate_image(img_valid, (14, 14))
     show(img_valid, 'valid: dilated 14x14')
 
@@ -105,7 +105,8 @@ def calculate_marks(img_model_filename, img_sample_filename, debug=False):
     img_valid = remove_invalid_answers(img_valid, debug=debug)
     show(img_valid, 'valid: removed invalid answers', True)
 
-    img_correct = and_image(img_common, img_valid)
+    # img_correct = and_image(img_common, img_valid)
+    img_correct = img_common - img_valid
     show(img_correct, 'correct: valid && common', True)
     highlight_circles(img_correct)
 
@@ -156,8 +157,8 @@ def train():
             #              216, 219, 220, 223, 224, 225, 226, 227, 229, 232, 234,
             #              243, 245, 249, 256, 258, 262, 270, 275, 277, 278, 279,
             #              282]:
-            if i not in [17, 39, 54, 107, 122, 134, 142, 171, 245, 256]:
-                continue
+            # if i not in [17, 39, 54, 107, 122, 134, 142, 171, 245, 256]:
+            #     continue
 
             sample_file_path = f'data/dataset/train/{t.FileName}'
             expected_mark = t.Mark

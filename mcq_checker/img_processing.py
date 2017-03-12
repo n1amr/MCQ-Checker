@@ -190,9 +190,10 @@ def remove_invalid_answers(img, debug=False):
             invalid_answers.append(spacings.argmin())
         heights = np.concatenate([heights, [new_height]])
 
+    img = img * 0
     for i in invalid_answers:
         x1, y1, x2, y2 = pairs[i]
-        cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 0), -1)
+        cv2.rectangle(img, (x1, y1), (x2, y2), (255, 255, 255), -1)
 
     if debug:
         print(f'Found {len(pairs)} black shapes')
