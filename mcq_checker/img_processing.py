@@ -1,13 +1,35 @@
 import math
+import re
+import os
 
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
 
-def show_image(img):
-    plt.imshow(img, cmap='gray')
-    plt.show()
+def show_image(img, msg=None, unstack=False):
+    n = img.shape[0]
+    x = 5
+    if unstack:
+        if msg is not None:
+            plt.title(msg)
+
+        img = np.hstack([img[:n // 3],
+                         np.ones((n // 3, 5)),
+                         img[n // 3:2 * n // 3],
+                         np.ones((n // 3, 5)),
+                         img[2 * n // 3:]])
+        plt.imshow(img, 'gray')
+        plt.get_current_fig_manager().full_screen_toggle()
+        plt.show()
+    else:
+        for i in [2]:
+            if msg is not None:
+                plt.title(msg)
+
+            plt.imshow(img[i * n // x: (i + 2) * n // x, :], 'gray')
+            plt.get_current_fig_manager().full_screen_toggle()
+            plt.show()
 
 
 def inspect_img(img):
@@ -23,6 +45,7 @@ def load_image(path):
 
 kp1, des1 = None, None
 
+
 def deskew_image(img_original, img_skewed, debug=False):
     surf = cv2.xfeatures2d.SURF_create(400)
 
@@ -34,9 +57,9 @@ def deskew_image(img_original, img_skewed, debug=False):
     # FLANN_INDEX_KDTREE = 0
     FLANN_INDEX_KDTREE = 1
     # index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=2)
+    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=3)
     # search_params = dict(checks=50)
-    search_params = dict(checks=5)
+    search_params = dict(checks=10)
     flann = cv2.FlannBasedMatcher(index_params, search_params)
     matches = flann.knnMatch(des1, des2, k=2)
 
@@ -66,8 +89,10 @@ def deskew_image(img_original, img_skewed, debug=False):
                 f'Calculated scale difference: {scaleRecovered:0.2f}\n'
                 f'Calculated rotation difference: {thetaRecovered:0.2f}')
 
-        img_deskewed = cv2.warpPerspective(img_skewed, np.linalg.inv(M), (
-            img_original.shape[1], img_original.shape[0]))
+        img_deskewed = cv2.warpPerspective(img_skewed,
+                                           np.linalg.inv(M),
+                                           (img_original.shape[1],
+                                            img_original.shape[0]))
 
     else:
         img_deskewed = None
@@ -78,7 +103,10 @@ def deskew_image(img_original, img_skewed, debug=False):
 
 
 def threshold_image(img):
-    return cv2.threshold(img, 220, 255, cv2.THRESH_BINARY_INV)[1]
+    img = cv2.threshold(img, thresh=np.round(0.85 * 255),
+                        maxval=1 * 255,
+                        type=cv2.THRESH_BINARY_INV)[1]
+    return img
 
 
 def and_image(img1, img2):
@@ -86,23 +114,38 @@ def and_image(img1, img2):
 
 
 def stack_image(img):
-    img_cropped_1 = img[760:1400, 111:365]
-    img_cropped_2 = img[760:1400, 428:682]
-    img_cropped_3 = img[760:1400, 769:1023]
+    img_cropped_1 = img[760:1400, 171:360]
+    img_cropped_2 = img[760:1400, 500:689]
+    img_cropped_3 = img[760:1400, 829:1018]
 
     img_stacked = np.vstack([img_cropped_1, img_cropped_2, img_cropped_3])
+    # img_stacked = np.hstack([img_cropped_1, img_cropped_2, img_cropped_3])
     return img_stacked
 
 
-def dilate_erode_image(img):
-    n = 11
-    element = np.ones((n, n))
-
-    img_dilated_eroded = cv2.dilate(cv2.erode(img, element), element)
-    return img_dilated_eroded
+def erode_image(img, kernel_size):
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
+    img = cv2.erode(img, kernel)
+    return img
 
 
-def detect_circles(img, debug=False):
+def dilate_image(img, kernel_size):
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
+    img = cv2.dilate(img, kernel)
+    return img
+
+
+def show_highlighted_circles(img, pairs=None):
+    if not pairs:
+        pairs = extract_circles(img)
+    img = img.copy()
+    for p in pairs:
+        x1, y1, x2, y2 = p
+        cv2.rectangle(img, (x1, y1), (x2, y2), (255, 255, 255), 2)
+    show_image(img, unstack=True)
+
+
+def extract_circles(img):
     # find all the 'white' shapes in the image
     lower = np.array(255)
     upper = np.array(255)
@@ -114,21 +157,50 @@ def detect_circles(img, debug=False):
         cv2.RETR_EXTERNAL,
         cv2.CHAIN_APPROX_SIMPLE)
 
+    pairs = []
+    for c in cnts:
+        c = c[:, 0, :]
+        margin = 5
+        x1 = c.min(axis=0)[0] - margin
+        y1 = c.min(axis=0)[1] - margin
+        x2 = c.max(axis=0)[0] + margin
+        y2 = c.max(axis=0)[1] + margin
+        pairs.append((x1, y1, x2, y2))
+
+    return pairs
+
+
+def count_circles(img, debug=False):
+    pairs = extract_circles(img)
     if debug:
-        print(f'I found {len(cnts)} black shapes')
+        print(f'Found {len(pairs)} black shapes')
+        show_highlighted_circles(img, pairs)
 
-        def show_highlighted_circles(img, cnts):
-            for c in cnts:
-                c = c[:, 0, :]
-                margin = 5
-                x1 = c.min(axis=0)[0] - margin
-                y1 = c.min(axis=0)[1] - margin
-                x2 = c.max(axis=0)[0] + margin
-                y2 = c.max(axis=0)[1] + margin
+    return len(pairs)
 
-                cv2.rectangle(img, (x1, y1), (x2, y2), (255, 255, 255), 2)
-            show_image(img)
 
-        show_highlighted_circles(img, cnts)
+def remove_invalid_answers(img, debug=False):
+    heights = np.array([])
+    invalid_answers = []
+    spacing_threshold = 20
 
-    return len(cnts)
+    pairs = extract_circles(img)
+    for i, p in enumerate(pairs):
+        x1, y1, x2, y2 = p
+        new_height = (y1 + y2) / 2
+        spacings = np.abs(heights - new_height)
+        if spacings.size > 0 and spacings.min() < spacing_threshold:
+            invalid_answers.append(i)
+            invalid_answers.append(spacings.argmin())
+        heights = np.concatenate([heights, [new_height]])
+
+    for i in invalid_answers:
+        x1, y1, x2, y2 = pairs[i]
+        cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 0), -1)
+
+    if debug:
+        print(f'Found {len(pairs)} black shapes')
+        pairs = extract_circles(img)
+        show_highlighted_circles(img, pairs)
+
+    return img
