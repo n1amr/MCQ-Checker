@@ -7,7 +7,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def show_image(img, msg=None, unstack=False):
+def show_image(img, msg=None, unstack=False, complete=False):
     n = img.shape[0]
     x = 5
     if unstack:
@@ -27,7 +27,12 @@ def show_image(img, msg=None, unstack=False):
             if msg is not None:
                 plt.title(msg)
 
-            plt.imshow(img[i * n // x: (i + 2) * n // x, :], 'gray')
+            if complete:
+                segment = img
+            else:
+                segment = img[i * n // x: (i + 2) * n // x, :]
+
+            plt.imshow(segment, 'gray')
             plt.get_current_fig_manager().full_screen_toggle()
             plt.show()
 
@@ -103,7 +108,10 @@ def deskew_image(img_original, img_skewed, debug=False):
 
 
 def threshold_image(img):
-    img = cv2.threshold(img, thresh=np.round(0.85 * 255),
+    # TODO
+    THRESHOLD = 0.85
+    # THRESHOLD = 0.92
+    img = cv2.threshold(img, thresh=np.round(THRESHOLD * 255),
                         maxval=1 * 255,
                         type=cv2.THRESH_BINARY_INV)[1]
     return img
@@ -180,6 +188,8 @@ def count_circles(img, debug=False):
 
 
 def remove_invalid_answers(img, debug=False):
+    img = img.copy()
+
     heights = np.array([])
     invalid_answers = []
     spacing_threshold = 20

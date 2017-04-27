@@ -3,7 +3,9 @@ import re
 
 import cv2
 import pandas as pd
+from matplotlib import pyplot as plt
 
+from mcq_checker.template_matcher import TemplateMatcher
 from .img_processing import (
     show_image,
     load_image,
@@ -14,8 +16,8 @@ from .img_processing import (
     erode_image,
     dilate_image,
     count_circles,
-    remove_invalid_answers,
-    show_highlighted_circles)
+    remove_invalid_answers
+)
 
 img_model = None
 img_model_threshed = None
@@ -29,6 +31,7 @@ def get_cached_path(img_path):
 
 
 def calculate_marks(img_model_filename, img_sample_filename, debug=False):
+    # debug = True # TODO
     global img_model
     global img_model_threshed
     show = show_image
@@ -54,8 +57,40 @@ def calculate_marks(img_model_filename, img_sample_filename, debug=False):
 
         cv2.imwrite(cached_path, img_sample)
 
+    img_max = cv2.max(img_model, img_sample)
+    img_max_thresholded = threshold_image(img_max)
+
+    img_min = cv2.min(img_model, img_sample)
+    img_min_thresholded = threshold_image(img_min)
+
+    img_min_stacked = stack_image(img_min_thresholded)
+    img_max_stacked = stack_image(img_max_thresholded)
+
+    N = 17
+    img_min_ = dilate_image(erode_image(img_min_stacked, (10, 10)),
+                            (N, N))
+    img_max_ = dilate_image(erode_image(img_max_stacked, (10, 10)),
+                            (N, N))
+
+    # show_image(img_min_, complete=True)
+    # show_image(img_max_, complete=True)
+
+    remove_invalid_answers(img_min_)
+    remove_invalid_answers(img_max_)
+
+    img_anded = and_image(img_min_, img_max_)
+    # show_image(img_anded)
+
+    x = count_circles(img_anded)
+    return x
+
+    # import IPython
+    # IPython.embed()
+    # err
+
     img_model = threshold_image(img_model)
     # show(img_model, 'model: thresholded')
+
 
     img_model = dilate_image(img_model, (13, 13))
     # show(img_model, 'model: dilated 13x13')
@@ -139,6 +174,11 @@ def save_csv(dataframe, path):
     dataframe.to_csv(path, index=False)
 
 
+def print_errors(errors):
+    for e in errors:
+        print(f"{e['id']}:\t{e['mark']} != {e['expected']}\t{e['filename']}")
+
+
 def train():
     img_model_filename = 'data/model-answer.png'
 
@@ -154,23 +194,9 @@ def train():
     try:
         for t in train_set[['FileName', 'Mark']].itertuples():
             i += 1
-            # if i not in [13]:
-            #  if i not in [4, 13, 15, 18, 39]:
-            # if i not in [2, 17, 29, 46, 47, 48, 49, 50, 54, 56, 58, 60, 61, 62,
-            #              63, 65, 66, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
-            #              80, 81, 82, 86, 88, 89, 90, 91, 92, 94, 95, 96, 97, 99,
-            #              100, 101, 102, 103, 104, 105, 107, 109, 112, 114, 115,
-            #              116, 117, 119, 120, 121, 122, 123, 124, 125, 126, 127,
-            #              128, 130, 132, 134, 135, 136, 137, 138, 140, 141, 142,
-            #              143, 144, 145, 146, 148, 150, 151, 152, 153, 154, 155,
-            #              156, 157, 158, 159, 160, 161, 163, 167, 168, 169, 171,
-            #              173, 176, 177, 179, 180, 181, 182, 183, 185, 186, 187,
-            #              190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200,
-            #              201, 202, 203, 204, 205, 206, 207, 208, 209, 212, 215,
-            #              216, 219, 220, 223, 224, 225, 226, 227, 229, 232, 234,
-            #              243, 245, 249, 256, 258, 262, 270, 275, 277, 278, 279,
-            #              282]:
-            # if i not in [17, 39, 54, 107, 122, 134, 142, 171, 245, 256]:
+            # TODO
+            # if i not in [17, 39, 54, 107, 134, 142, 171, 245, 256, 26]:
+            # if i not in [54]:
             #     continue
 
             sample_file_path = f'data/dataset/train/{t.FileName}'
@@ -191,8 +217,9 @@ def train():
                   f'Total absolute error = {total_abs_error:4}')
 
             if error != 0:
-                errors.append(i)
-                print(errors)
+                errors.append({'id': i, 'filename': sample_file_path,
+                               'expected': expected_mark, 'mark': output_mark})
+                print_errors(errors)
                 # calculate_marks(img_model_filename, sample_file_path,
                 #                 debug=True)
 
@@ -200,7 +227,8 @@ def train():
     except KeyboardInterrupt:
         pass
 
-    print(errors)
+    # print(errors)
+    print_errors(errors)
 
 
 def test():
@@ -246,5 +274,5 @@ def main(*argv):
 
 if __name__ == '__main__':
     # sys.exit(main(*sys.argv))
-    train()
-    # test()
+    # train()
+    test()
