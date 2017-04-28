@@ -9,17 +9,22 @@ from matplotlib import pyplot as plt
 
 def show_image(img, msg=None, unstack=False, complete=False):
     n = img.shape[0]
+    n3 = n // 3
     x = 5
+
     if unstack:
+        if len(img.shape) == 2:
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+
         if msg is not None:
             plt.title(msg)
 
-        img = np.hstack([img[:n // 3],
-                         np.ones((n // 3, 5)),
-                         img[n // 3:2 * n // 3],
-                         np.ones((n // 3, 5)),
-                         img[2 * n // 3:]])
-        plt.imshow(img, 'gray')
+        img = np.hstack([img[:n3],
+                         np.ones((n3, x, 3), dtype='uint8'),
+                         img[n3:2 * n3],
+                         np.ones((n3, x, 3), dtype='uint8'),
+                         img[2 * n3:]])
+        plt.imshow(img)
         plt.get_current_fig_manager().full_screen_toggle()
         plt.show()
     else:
@@ -127,6 +132,17 @@ def stack_image(img):
     img_cropped_3 = img[760:1400, 829:1018]
 
     img_stacked = np.vstack([img_cropped_1, img_cropped_2, img_cropped_3])
+    # img_stacked = np.hstack([img_cropped_1, img_cropped_2, img_cropped_3])
+    return img_stacked
+
+def stack_image_2(img):
+    # img = img_min_thresholded
+    img_cropped_1 = img[776:1382 + 6, 116:360]
+    img_cropped_2 = img[776:1382 + 3, 445:689]
+    img_cropped_3 = img[776:1382 + 0, 774:1018]
+
+    img_stacked = np.vstack([img_cropped_1, img_cropped_2, img_cropped_3])
+    # plt.show(plt.imshow(img_stacked, 'gray'))
     # img_stacked = np.hstack([img_cropped_1, img_cropped_2, img_cropped_3])
     return img_stacked
 

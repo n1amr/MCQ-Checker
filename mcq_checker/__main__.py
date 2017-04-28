@@ -1,10 +1,11 @@
 import os
 import re
-
+import numpy as np
 import cv2
 import pandas as pd
 from matplotlib import pyplot as plt
 
+from mcq_checker.img_processing import stack_image_2
 from mcq_checker.template_matcher import TemplateMatcher
 from .img_processing import (
     show_image,
@@ -31,7 +32,6 @@ def get_cached_path(img_path):
 
 
 def calculate_marks(img_model_filename, img_sample_filename, debug=False):
-    # debug = True # TODO
     global img_model
     global img_model_threshed
     show = show_image
@@ -63,20 +63,73 @@ def calculate_marks(img_model_filename, img_sample_filename, debug=False):
     img_min = cv2.min(img_model, img_sample)
     img_min_thresholded = threshold_image(img_min)
 
-    img_min_stacked = stack_image(img_min_thresholded)
-    img_max_stacked = stack_image(img_max_thresholded)
+    # img_min_stacked = stack_image(img_min_thresholded)
+    # img_max_stacked = stack_image(img_max_thresholded)
 
-    N = 17
-    img_min_ = dilate_image(erode_image(img_min_stacked, (10, 10)),
-                            (N, N))
-    img_max_ = dilate_image(erode_image(img_max_stacked, (10, 10)),
-                            (N, N))
+    img_min_stacked = stack_image_2(img_min_thresholded)
+    img_max_stacked = stack_image_2(img_max_thresholded)
+
+    tm = TemplateMatcher(img_min_stacked)
+
+    # img_model_thresholded = threshold_image(img_model)
+    # img_model_stacked = stack_image_2(img_model_thresholded)
+    # img_model_marked, answers = tm.marks_stacked(img_model_stacked)
+    # show_image(img_model_marked, unstack=True)
+    # print(answers)
+
+    MODEL_ANSWERS = {1: {'B'}, 2: {'C'}, 3: {'A'}, 4: {'A'}, 5: {'D'},
+                     6: {'A'}, 7: {'C'}, 8: {'C'}, 9: {'A'}, 10: {'C'},
+                     11: {'A'}, 12: {'B'}, 13: {'C'}, 14: {'C'}, 15: {'B'},
+                     16: {'A'}, 17: {'D'}, 18: {'B'}, 19: {'C'}, 20: {'B'},
+                     21: {'D'}, 22: {'C'}, 23: {'D'}, 24: {'B'}, 25: {'D'},
+                     26: {'C'}, 27: {'D'}, 28: {'D'}, 29: {'B'}, 30: {'C'},
+                     31: {'B'}, 32: {'B'}, 33: {'D'}, 34: {'C'}, 35: {'B'},
+                     36: {'C'}, 37: {'B'}, 38: {'C'}, 39: {'C'}, 40: {'A'},
+                     41: {'B'}, 42: {'B'}, 43: {'C'}, 44: {'C'}, 45: {'B'},
+                     46: set()}
+
+    img_sample_thresholded = threshold_image(img_sample)
+    img_sample_stacked = stack_image_2(img_sample_thresholded)
+    img_sample_marked, answers = tm.marks_stacked(img_sample_stacked)
+    score = 0
+    for i in range(1, 46):
+        a = answers[i]
+        if len(a) == 1 and a == MODEL_ANSWERS[i]:
+            score += 1
+    return score
+    print(answers)
+    # show_image(img_sample_marked, unstack=True)
+
+    # img_min_marked = tm.marks_stacked(img_min_stacked)
+    # show_image(img_min_marked, unstack=True)
+
+    # img_max_marked = tm.marks_stacked(img_max_stacked)
+    # show_image(img_max_marked, unstack=True)
+
+    # img_anded = cv2.bitwise_and(img_min_marked, img_max_marked)
+    # show_image(img_anded, unstack=True)
+
+    # show_image(np.hstack([
+    #     img_min_marked,
+    #     img_max_marked,
+    #     img_anded
+    # ]), unstack=True)
+    #
+    return 0
+
+    M = 10
+    N = 10
+    img_min_ = dilate_image(erode_image(img_min_stacked, (M, M)), (N, N))
+    img_max_ = dilate_image(erode_image(img_max_stacked, (M, M)), (N, N))
+
+    # img_min_ = img_min_stacked
+    # img_max_ = img_max_stacked
 
     # show_image(img_min_, complete=True)
     # show_image(img_max_, complete=True)
 
-    remove_invalid_answers(img_min_)
-    remove_invalid_answers(img_max_)
+    img_min_ = remove_invalid_answers(img_min_, debug=True)
+    img_max_ = remove_invalid_answers(img_max_, debug=True)
 
     img_anded = and_image(img_min_, img_max_)
     # show_image(img_anded)
@@ -196,7 +249,7 @@ def train():
             i += 1
             # TODO
             # if i not in [17, 39, 54, 107, 134, 142, 171, 245, 256, 26]:
-            # if i not in [54]:
+            # if i not in [1, 2,3,54]:
             #     continue
 
             sample_file_path = f'data/dataset/train/{t.FileName}'
@@ -274,5 +327,5 @@ def main(*argv):
 
 if __name__ == '__main__':
     # sys.exit(main(*sys.argv))
-    # train()
-    test()
+    train()
+    # test()
