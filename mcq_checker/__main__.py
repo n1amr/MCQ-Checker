@@ -88,16 +88,20 @@ def calculate_marks(img_model_filename, img_sample_filename, debug=False):
                      41: {'B'}, 42: {'B'}, 43: {'C'}, 44: {'C'}, 45: {'B'},
                      46: set()}
 
-    img_sample_thresholded = threshold_image(img_sample)
-    img_sample_stacked = stack_image_2(img_sample_thresholded)
-    img_sample_marked, answers = tm.marks_stacked(img_sample_stacked)
+    img = img_sample.copy()
+    img = cv2.bitwise_not(img)
+    img = stack_image_2(img)
+    img, answers = tm.marks_stacked(img)
+    # show_image(img, unstack=True)
+    # print(answers)
+
     score = 0
     for i in range(1, 46):
         a = answers[i]
         if len(a) == 1 and a == MODEL_ANSWERS[i]:
             score += 1
     return score
-    print(answers)
+
     # show_image(img_sample_marked, unstack=True)
 
     # img_min_marked = tm.marks_stacked(img_min_stacked)
@@ -249,8 +253,15 @@ def train():
             i += 1
             # TODO
             # if i not in [17, 39, 54, 107, 134, 142, 171, 245, 256, 26]:
-            # if i not in [1, 2,3,54]:
+            # if i not in [54]:
+            # if i not in [1, 17, 71, 107, 122, 149, 245, 269]:
             #     continue
+            # if i not in [15, 54, 107, 118, 229]:
+            #     continue
+            if i not in [
+                15, 54, 107, 118, 229, 39, 45, 107, 122, 269,
+            ]:
+                continue
 
             sample_file_path = f'data/dataset/train/{t.FileName}'
             expected_mark = t.Mark
@@ -327,5 +338,5 @@ def main(*argv):
 
 if __name__ == '__main__':
     # sys.exit(main(*sys.argv))
-    train()
-    # test()
+    # train()
+    test()

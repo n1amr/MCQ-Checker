@@ -19,31 +19,31 @@ class TemplateMatcher:
         self.img_gray = img_gray
         self.img_rgb = cv2.cvtColor(self.img_gray, cv2.COLOR_GRAY2BGR)
 
-    def marks(self):
-        marked_img = self.img_rgb.copy()
-        answers = []
-        for template, color, ans in [(self.template_a, self.color_a, 'a'),
-                                     (self.template_b, self.color_b, 'b'),
-                                     (self.template_c, self.color_c, 'c'),
-                                     (self.template_d, self.color_d, 'd'), ]:
-            w, h = template.shape[::-1]
-
-            res = cv2.matchTemplate(self.img_gray, template,
-                                    cv2.TM_CCOEFF_NORMED)
-            threshold = 0.65
-            loc = np.where(res >= threshold)
-
-            for pt in zip(*loc[::-1]):
-                cv2.rectangle(marked_img, pt, (pt[0] + w, pt[1] + h), color, 4)
-                answers.append((pt[::-1], ans))
-
-        answers = [*sorted(answers)]
-        min_answers = [answers[0]]
-        for ans in answers:
-            if abs(min_answers[-1][0][1] - ans[0][1]) > 20:
-                min_answers.append(ans)
-
-        return marked_img
+    # def marks(self):
+    #     marked_img = self.img_rgb.copy()
+    #     answers = []
+    #     for template, color, ans in [(self.template_a, self.color_a, 'a'),
+    #                                  (self.template_b, self.color_b, 'b'),
+    #                                  (self.template_c, self.color_c, 'c'),
+    #                                  (self.template_d, self.color_d, 'd'), ]:
+    #         w, h = template.shape[::-1]
+    #
+    #         res = cv2.matchTemplate(self.img_gray, template,
+    #                                 cv2.TM_CCOEFF_NORMED)
+    #         threshold = 0.70
+    #         loc = np.where(res >= threshold)
+    #
+    #         for pt in zip(*loc[::-1]):
+    #             cv2.rectangle(marked_img, pt, (pt[0] + w, pt[1] + h), color, 4)
+    #             answers.append((pt[::-1], ans))
+    #
+    #     answers = [*sorted(answers)]
+    #     min_answers = [answers[0]]
+    #     for ans in answers:
+    #         if abs(min_answers[-1][0][1] - ans[0][1]) > 20:
+    #             min_answers.append(ans)
+    #
+    #     return marked_img
 
     def marks_stacked(self, img):
         marked_img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
@@ -56,7 +56,7 @@ class TemplateMatcher:
             w, h = img_t.shape[::-1]
 
             res = cv2.matchTemplate(img, img_t, cv2.TM_CCOEFF_NORMED)
-            threshold = 0.70
+            threshold = 0.66
             loc = np.where(res >= threshold)
 
             points = [*zip(*loc[::-1])]
@@ -70,7 +70,7 @@ class TemplateMatcher:
             L_WIDTH = 2
             for pt in min_points:
                 pt_from = (pt[0] + i * L_WIDTH, pt[1] + i * L_WIDTH)
-                pt_to = (pt_from[0] + w, pt_from[1] + h)
+                pt_to = (pt[0] + w, pt[1] + h)
                 cv2.rectangle(marked_img, pt_from, pt_to, color, L_WIDTH)
                 answers.append((pt[::-1], ans))
 
