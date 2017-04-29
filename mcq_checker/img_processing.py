@@ -1,6 +1,4 @@
 import math
-import re
-import os
 
 import cv2
 import numpy as np

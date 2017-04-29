@@ -1,21 +1,14 @@
 import os
 import re
+import sys
 
 import cv2
 import pandas as pd
-import sys
 
 from .img_processing import (
     show_image,
     load_image,
-    deskew_image,
-    threshold_image,
-    and_image,
-    stack_image,
-    erode_image,
-    dilate_image,
-    count_circles,
-    remove_invalid_answers
+    deskew_image
 )
 from .naive_search import extract_answers
 
@@ -163,11 +156,11 @@ def test():
 
 
 def main(*argv):
-    samples = [15, 39, 44, 45, 50, 53, 54, 68, 71, 80, 107, 118, 121, 122, 133,
-               149, 164, 169, 229, 245, 249, 251, 269, ]
-    samples.sort()
+    # samples = [15, 39, 44, 45, 50, 53, 54, 68, 71, 80, 107, 118, 121, 122, 133,
+    #            149, 164, 169, 229, 245, 249, 251, 269, ]
+    # samples.sort()
     # train(samples)
-    # train()
+    train()
     test()
 
     return 0

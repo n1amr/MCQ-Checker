@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 
-from mcq_checker.img_processing import show_image
-
 
 class TemplateMatcher:
     def __init__(self):
