@@ -22,7 +22,7 @@ def extract_answers(img):
         for k in range(4):
             d.append((choices[k], k))
         d.sort(reverse=True)
-        if d[0][0] / d[3][0] > 1.05 and (
+        if d[0][0] > 1.05 * d[3][0] and (
                     d[0][0] - avg) > 1.5 * (d[1][0] - avg):
             ind = d[0][1]
             answers[i + 1] = 'ABCD'[ind]
