@@ -5,7 +5,7 @@ import cv2
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from mcq_checker.img_processing import stack_image_2
+from mcq_checker.img_processing import stack_image_2, stack_image_3
 from mcq_checker.template_matcher import TemplateMatcher
 from .img_processing import (
     show_image,
@@ -23,6 +23,16 @@ from .img_processing import (
 img_model = None
 img_model_threshed = None
 
+MODEL_ANSWERS = {1: 'B', 2: 'C', 3: 'A', 4: 'A', 5: 'D',
+                 6: 'A', 7: 'C', 8: 'C', 9: 'A', 10: 'C',
+                 11: 'A', 12: 'B', 13: 'C', 14: 'C', 15: 'B',
+                 16: 'A', 17: 'D', 18: 'B', 19: 'C', 20: 'B',
+                 21: 'D', 22: 'C', 23: 'D', 24: 'B', 25: 'D',
+                 26: 'C', 27: 'D', 28: 'D', 29: 'B', 30: 'C',
+                 31: 'B', 32: 'B', 33: 'D', 34: 'C', 35: 'B',
+                 36: 'C', 37: 'B', 38: 'C', 39: 'C', 40: 'A',
+                 41: 'B', 42: 'B', 43: 'C', 44: 'C', 45: 'B', }
+
 
 def get_cached_path(img_path):
     m = re.match(r'(?P<basename>.*)\.(?P<extension>\w+)', img_path)
@@ -31,7 +41,8 @@ def get_cached_path(img_path):
     return path
 
 
-def calculate_marks(img_model_filename, img_sample_filename, debug=False):
+def calculate_marks(img_model_filename, img_sample_filename, debug=False,
+                    expected=-1):
     global img_model
     global img_model_threshed
     show = show_image
@@ -57,49 +68,77 @@ def calculate_marks(img_model_filename, img_sample_filename, debug=False):
 
         cv2.imwrite(cached_path, img_sample)
 
-    img_max = cv2.max(img_model, img_sample)
-    img_max_thresholded = threshold_image(img_max)
+    def extract_answers(img):
+        img = stack_image_3(img)
+        orig_img = img.copy()
+        # show_image(img, unstack=True)
+        HEIGHT = 41
+        answers = dict([(i, 0) for i in range(1, 46)])
+        for i in range(45):
+            img2 = img[i * HEIGHT: (i + 1) * HEIGHT, :]
+            choices = []
+            for j in range(4):
+                img3 = img2[:, 75 + 40 * j:105 + 40 * j]
+                # plt.show(plt.imshow(img3, 'gray'))
+                img3 = cv2.bitwise_not(img3)
+                img3 = cv2.threshold(img3, 50, 255, cv2.THRESH_TOZERO)[1]
+                # plt.show(plt.imshow(img3, 'gray'))
+                avg = img3.sum() / (25 * 23)
+                choices.append(round(avg))
+                # plt.show(plt.imshow(img3, 'gray'))
+            # print(choices)
+            avg = (sum(choices) - 4 * min(choices)) / len(choices)
+            d = []
+            for k in range(4):
+                d.append((choices[k], k))
+            d.sort(reverse=True)
+            # import IPython; IPython.embed()
+            if d[0][0] / d[3][0] > 1.05 and (
+                        d[0][0] - avg) > 1.5 * (d[1][0] - avg):
+                ind = d[0][1]
+                answers[i + 1] = 'ABCD'[ind]
+                orig_img[i * HEIGHT: (i + 1) * HEIGHT,
+                75 + 40 * ind:105 + 40 * ind] = 255
+                # else:
+                #     print(i + 1, d)
+                # if selected_choices == 1:
+                #     for ind, c in enumerate(choices):
+                #         if c > avg:
+                #             answers[i + 1] = 'ABCD'[ind]
+                #             orig_img[i * HEIGHT: (i + 1) * HEIGHT,
+                #             75 + 40 * ind:105 + 40 * ind] = 255
+                #
+                #             break
 
-    img_min = cv2.min(img_model, img_sample)
-    img_min_thresholded = threshold_image(img_min)
+                # print(avg)
+                # print(answers[i])
+                # plt.show(plt.imshow(img2))
+        return answers, orig_img
 
-    # img_min_stacked = stack_image(img_min_thresholded)
-    # img_max_stacked = stack_image(img_max_thresholded)
-
-    img_min_stacked = stack_image_2(img_min_thresholded)
-    img_max_stacked = stack_image_2(img_max_thresholded)
-
-    tm = TemplateMatcher(img_min_stacked)
-
-    # img_model_thresholded = threshold_image(img_model)
-    # img_model_stacked = stack_image_2(img_model_thresholded)
-    # img_model_marked, answers = tm.marks_stacked(img_model_stacked)
-    # show_image(img_model_marked, unstack=True)
-    # print(answers)
-
-    MODEL_ANSWERS = {1: {'B'}, 2: {'C'}, 3: {'A'}, 4: {'A'}, 5: {'D'},
-                     6: {'A'}, 7: {'C'}, 8: {'C'}, 9: {'A'}, 10: {'C'},
-                     11: {'A'}, 12: {'B'}, 13: {'C'}, 14: {'C'}, 15: {'B'},
-                     16: {'A'}, 17: {'D'}, 18: {'B'}, 19: {'C'}, 20: {'B'},
-                     21: {'D'}, 22: {'C'}, 23: {'D'}, 24: {'B'}, 25: {'D'},
-                     26: {'C'}, 27: {'D'}, 28: {'D'}, 29: {'B'}, 30: {'C'},
-                     31: {'B'}, 32: {'B'}, 33: {'D'}, 34: {'C'}, 35: {'B'},
-                     36: {'C'}, 37: {'B'}, 38: {'C'}, 39: {'C'}, 40: {'A'},
-                     41: {'B'}, 42: {'B'}, 43: {'C'}, 44: {'C'}, 45: {'B'},
-                     46: set()}
-
-    img = img_sample.copy()
-    img = cv2.bitwise_not(img)
-    img = stack_image_2(img)
-    img, answers = tm.marks_stacked(img)
-    # show_image(img, unstack=True)
-    # print(answers)
+    img = img_sample
+    answers, orig_img = extract_answers(img)
+    # show_image(orig_img, complete=True)
+    # tm = TemplateMatcher()
+    #
+    # img = img_sample.copy()
+    # img = cv2.bitwise_not(img)
+    # img = stack_image_2(img)
+    # img, answers = tm.marks_stacked(img)
+    # show_image(img, complete=True)
 
     score = 0
     for i in range(1, 46):
         a = answers[i]
-        if len(a) == 1 and a == MODEL_ANSWERS[i]:
+        if a is not None and a == MODEL_ANSWERS[i]:
             score += 1
+
+    if score != expected:
+        for i, ans in answers.items():
+            print(i, ans)
+            # show_image(orig_img, complete=True)
+            # show_image(img)
+            # exit(1)
+
     return score
 
     # show_image(img_sample_marked, unstack=True)
@@ -121,7 +160,6 @@ def calculate_marks(img_model_filename, img_sample_filename, debug=False):
     #
     return 0
 
-    M = 10
     N = 10
     img_min_ = dilate_image(erode_image(img_min_stacked, (M, M)), (N, N))
     img_max_ = dilate_image(erode_image(img_max_stacked, (M, M)), (N, N))
@@ -236,7 +274,7 @@ def print_errors(errors):
         print(f"{e['id']}:\t{e['mark']} != {e['expected']}\t{e['filename']}")
 
 
-def train():
+def train(samples=None):
     img_model_filename = 'data/model-answer.png'
 
     input_csv_file_path = 'data/train.csv'
@@ -251,16 +289,7 @@ def train():
     try:
         for t in train_set[['FileName', 'Mark']].itertuples():
             i += 1
-            # TODO
-            # if i not in [17, 39, 54, 107, 134, 142, 171, 245, 256, 26]:
-            # if i not in [54]:
-            # if i not in [1, 17, 71, 107, 122, 149, 245, 269]:
-            #     continue
-            # if i not in [15, 54, 107, 118, 229]:
-            #     continue
-            if i not in [
-                15, 54, 107, 118, 229, 39, 45, 107, 122, 269,
-            ]:
+            if samples and (i not in samples):
                 continue
 
             sample_file_path = f'data/dataset/train/{t.FileName}'
@@ -269,7 +298,8 @@ def train():
                   f'{f"{t.Index / len(train_set) * 100:0.1f}":>5}%: '
                   f'{t.FileName:30}', end='', flush=True)
 
-            output_mark = calculate_marks(img_model_filename, sample_file_path)
+            output_mark = calculate_marks(img_model_filename, sample_file_path,
+                                          expected=expected_mark)
 
             output_dataframe.loc[t.Index] = [t.FileName, output_mark]
             save_csv(output_dataframe, output_csv_file_path)
@@ -338,5 +368,32 @@ def main(*argv):
 
 if __name__ == '__main__':
     # sys.exit(main(*sys.argv))
-    # train()
-    test()
+    samples = [
+        15,
+        39,
+        44,
+        45,
+        50,
+        53,
+        54,
+        68,
+        71,
+        80,
+        107,
+        118,
+        121,
+        122,
+        133,
+        149,
+        164,
+        169,
+        229,
+        245,
+        249,
+        251,
+        269,
+    ]
+    samples.sort()
+    # train(samples)
+    train()
+    # test()

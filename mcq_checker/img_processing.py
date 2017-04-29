@@ -135,11 +135,24 @@ def stack_image(img):
     # img_stacked = np.hstack([img_cropped_1, img_cropped_2, img_cropped_3])
     return img_stacked
 
+
 def stack_image_2(img):
     # img = img_min_thresholded
     img_cropped_1 = img[776:1382 + 6, 116:360]
     img_cropped_2 = img[776:1382 + 3, 445:689]
     img_cropped_3 = img[776:1382 + 0, 774:1018]
+
+    img_stacked = np.vstack([img_cropped_1, img_cropped_2, img_cropped_3])
+    # plt.show(plt.imshow(img_stacked, 'gray'))
+    # img_stacked = np.hstack([img_cropped_1, img_cropped_2, img_cropped_3])
+    return img_stacked
+
+
+def stack_image_3(img):
+    # img = img_min_thresholded
+    img_cropped_1 = img[776:1382 + 6 + 6, 116:360]
+    img_cropped_2 = img[776:1382 + 3 + 8, 445:689]
+    img_cropped_3 = img[776:1382 + 0 + 5, 774:1018]
 
     img_stacked = np.vstack([img_cropped_1, img_cropped_2, img_cropped_3])
     # plt.show(plt.imshow(img_stacked, 'gray'))
