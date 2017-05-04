@@ -1,14 +1,15 @@
 import cv2
 
-from mcq_checker.img_processing import stack_image_3
+from mcq_checker.utils.image import stack_image
 
 
 def extract_answers(img):
-    img = stack_image_3(img)
-    orig_img = img.copy()
+    img = stack_image(img)
+
     HEIGHT = 41
-    answers = dict([(i, 0) for i in range(1, 46)])
-    for i in range(45):
+    N_QUESTIONS = 45
+    answers = dict([(i + 1, '?') for i in range(N_QUESTIONS)])
+    for i in range(N_QUESTIONS):
         img2 = img[i * HEIGHT: (i + 1) * HEIGHT, :]
         choices = []
         for j in range(4):
@@ -26,7 +27,7 @@ def extract_answers(img):
                     d[0][0] - avg) > 1.5 * (d[1][0] - avg):
             ind = d[0][1]
             answers[i + 1] = 'ABCD'[ind]
-            orig_img[i * HEIGHT: (i + 1) * HEIGHT,
+            img[i * HEIGHT: (i + 1) * HEIGHT,
             75 + 40 * ind:105 + 40 * ind] = 255
 
-    return answers, orig_img
+    return answers, img
