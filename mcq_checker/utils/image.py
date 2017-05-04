@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def show_image(img, msg=None, unstack=False, complete=False):
+def show_image(img, msg=None, unstack=False, complete=True):
     n = img.shape[0]
     n3 = n // 3
     x = 5
@@ -48,6 +48,12 @@ def stack_image(img):
         img[776:1392, 445:689],
         img[776:1392, 774:1018]])
     return img_stacked
+
+
+def rotate_image(img, angle):
+    rotation_mat = cv2.getRotationMatrix2D((0, 0), angle, 1.0)
+    img = cv2.warpAffine(img, rotation_mat, img.T.shape)
+    return img
 
 
 def erode_image(img, kernel_size):
