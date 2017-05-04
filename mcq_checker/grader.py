@@ -1,19 +1,10 @@
 import os
-import re
 
 import cv2
 
-from mcq_checker.constants import MODEL_ANSWERS
+from mcq_checker.constants import MODEL_ANSWERS, get_cached_image_path
 from mcq_checker.naive_search import extract_answers
-from mcq_checker.utils.image import load_image, deskew_image, \
-    show_image
-
-
-def get_cached_path(img_path):
-    m = re.match(r'(?P<basename>.*)\.(?P<extension>\w+)', img_path)
-
-    path = f"{m['basename']}_cached.{m['extension']}"
-    return path
+from mcq_checker.utils.image import load_image, deskew_image, show_image
 
 
 class Grader:
@@ -21,7 +12,7 @@ class Grader:
         self.img_model = load_image(img_model_filename)
 
     def grade(self, img_sample_filename, expected=None):
-        cached_path = get_cached_path(img_sample_filename)
+        cached_path = get_cached_image_path(img_sample_filename)
         if os.path.exists(cached_path):
             img_sample = load_image(cached_path)
         else:

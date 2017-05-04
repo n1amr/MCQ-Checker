@@ -1,3 +1,5 @@
+import re
+
 IMG_MODEL_FILE_PATH = 'data/model-answer.png'
 
 TRAIN_INPUT_CSV_FILE_PATH = 'data/train.csv'
@@ -23,3 +25,10 @@ def get_train_image_path(filename):
 
 def get_test_image_path(filename):
     return f'data/dataset/test/{filename}'
+
+
+def get_cached_image_path(filename):
+    m = re.match(r'(?P<basename>.*)\.(?P<extension>\w+)', filename)
+
+    path = f"{m['basename']}_cached.{m['extension']}"
+    return path
