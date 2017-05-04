@@ -1,60 +1,15 @@
-import os
 import re
 import sys
 
-import cv2
 import pandas as pd
 
 from mcq_checker.csv_utils import load_csv, save_csv
-from mcq_checker.model_answers import MODEL_ANSWERS
-from .img_processing import (
-    show_image,
-    load_image,
-    deskew_image
-)
-from .naive_search import extract_answers
+from mcq_checker.grader import Grader
 
 img_model = None
 img_model_threshed = None
 
 
-def get_cached_path(img_path):
-    m = re.match(r'(?P<basename>.*)\.(?P<extension>\w+)', img_path)
-
-    path = f"{m['basename']}_cached.{m['extension']}"
-    return path
-
-
-def calculate_marks(img_model_filename, img_sample_filename, expected=None):
-    global img_model
-    global img_model_threshed
-
-    img_model = load_image(img_model_filename)
-
-    cached_path = get_cached_path(img_sample_filename)
-    if os.path.exists(cached_path):
-        img_sample = load_image(cached_path)
-    else:
-        img_sample = load_image(img_sample_filename)
-        img_sample = deskew_image(img_model, img_sample)
-        cv2.imwrite(cached_path, img_sample)
-
-    img = img_sample
-    answers, marked_img = extract_answers(img)
-
-    score = 0
-    for i in range(1, 46):
-        a = answers[i]
-        if a is not None and a == MODEL_ANSWERS[i]:
-            score += 1
-
-    if expected is not None and score != expected:
-        for i, ans in answers.items():
-            print(i, ans)
-        show_image(marked_img, complete=True)
-        show_image(img)
-
-    return score
 
 
 def print_errors(errors):
@@ -62,9 +17,7 @@ def print_errors(errors):
         print(f"{e['id']}:\t{e['mark']} != {e['expected']}\t{e['filename']}")
 
 
-def train(samples=None):
-    img_model_filename = 'data/model-answer.png'
-
+def train(grader, samples=None):
     input_csv_file_path = 'data/train.csv'
     train_set = pd.read_csv(input_csv_file_path)
 
@@ -86,8 +39,8 @@ def train(samples=None):
                   f'{f"{t.Index / len(train_set) * 100:0.1f}":>5}%: '
                   f'{t.FileName:30}', end='', flush=True)
 
-            output_mark = calculate_marks(img_model_filename, sample_file_path,
-                                          expected=expected_mark)
+            output_mark = grader.grade(sample_file_path,
+                                       expected=expected_mark)
 
             output_dataframe.loc[t.Index] = [t.FileName, output_mark]
             save_csv(output_dataframe, output_csv_file_path)
@@ -108,9 +61,7 @@ def train(samples=None):
     print_errors(errors)
 
 
-def test():
-    img_model_filename = 'data/model-answer.png'
-
+def test(grader):
     input_csv_file_path = 'data/test.csv'
     test_set = pd.read_csv(input_csv_file_path)
 
@@ -124,7 +75,7 @@ def test():
                   f'{f"{t.Index / len(test_set) * 100:0.1f}":>5}%: '
                   f'{t.FileName:30}', end='', flush=True)
 
-            output_mark = calculate_marks(img_model_filename, sample_file_path)
+            output_mark = grader.grade(sample_file_path)
 
             output_dataframe.loc[t.Index] = [t.FileName, output_mark]
             save_csv(output_dataframe, output_csv_file_path)
@@ -144,12 +95,15 @@ def main(*args):
         print_usage()
         return 1
 
+    img_model_filename = 'data/model-answer.png'
+    grader = Grader(img_model_filename)
+
     if args[1] == 'train':
         samples = [*map(int, args[2:])]
         samples.sort()
-        train(samples)
+        train(grader, samples)
     elif args[1] == 'test':
-        test()
+        test(grader)
     else:
         print_usage()
         return 1
