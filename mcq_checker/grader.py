@@ -19,7 +19,7 @@ class Grader:
             img = load_image(cached_path)
         else:
             img = load_image(img_path)
-            img = self.deskewer.deskew_image(self.img_model, img)
+            img = self.deskewer.deskew(img)
             cv2.imwrite(cached_path, img)
 
         answers, marked_img = extract_answers(img)
@@ -33,7 +33,7 @@ class Grader:
         if expected is not None and marks != expected:
             for i, ans in answers.items():
                 print(i, ans)
-            # show_image(marked_img, complete=True)
-            # show_image(img)
+                # show_image(marked_img, complete=True)
+                # show_image(img)
 
         return marks

@@ -5,23 +5,18 @@ import numpy as np
 
 
 class Deskewer:
-    def __init__(self, img_original):
-        self.kp1, self.des1 = None, None
+    def __init__(self, img_model):
+        self.img_model = img_model
         surf = cv2.xfeatures2d.SURF_create(400)
-        self.kp1, self.des1 = surf.detectAndCompute(img_original, None)
+        self.kp1, self.des1 = surf.detectAndCompute(self.img_model, None)
 
-    def deskew_image(self, img_original, img_skewed, debug=False):
+    def deskew(self, img, debug=False):
         surf = cv2.xfeatures2d.SURF_create(400)
 
-        assert self.kp1 is not None
+        kp2, des2 = surf.detectAndCompute(img, None)
 
-        kp2, des2 = surf.detectAndCompute(img_skewed, None)
-
-        # FLANN_INDEX_KDTREE = 0
         FLANN_INDEX_KDTREE = 1
-        # index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
         index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=3)
-        # search_params = dict(checks=50)
         search_params = dict(checks=10)
         flann = cv2.FlannBasedMatcher(index_params, search_params)
         matches = flann.knnMatch(self.des1, des2, k=2)
@@ -52,15 +47,14 @@ class Deskewer:
                     f'Calculated scale difference: {scaleRecovered:0.2f}\n'
                     f'Calculated rotation difference: {thetaRecovered:0.2f}')
 
-            img_deskewed = cv2.warpPerspective(img_skewed,
+            img_deskewed = cv2.warpPerspective(img,
                                                np.linalg.inv(M),
-                                               (img_original.shape[1],
-                                                img_original.shape[0]))
+                                               (self.img_model.shape[1],
+                                                self.img_model.shape[0]))
 
         else:
             img_deskewed = None
             print(
                 f'Not enough matches are found - {len(good)}/{MIN_MATCH_COUNT}')
-            matchesMask = None
 
         return img_deskewed
