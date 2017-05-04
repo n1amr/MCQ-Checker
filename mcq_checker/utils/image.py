@@ -40,13 +40,6 @@ def show_image(img, msg=None, unstack=False, complete=False):
             plt.show()
 
 
-def inspect_img(img):
-    print(f'Type: {type(img)}')
-    print(f'Shape: {img.shape}')
-    print(f'dtype: {img.dtype}')
-    print(f'Range: {img.min(), img.max()}')
-
-
 def load_image(path):
     return cv2.imread(path, cv2.IMREAD_GRAYSCALE)
 
@@ -110,51 +103,11 @@ def deskew_image(img_original, img_skewed, debug=False):
     return img_deskewed
 
 
-def threshold_image(img):
-    # TODO
-    THRESHOLD = 0.85
-    # THRESHOLD = 0.92
-    img = cv2.threshold(img, thresh=np.round(THRESHOLD * 255),
-                        maxval=1 * 255,
-                        type=cv2.THRESH_BINARY_INV)[1]
-    return img
-
-
-def and_image(img1, img2):
-    return np.round((img1 // 255 * img2 // 255) * 255)
-
-
 def stack_image(img):
-    img_cropped_1 = img[760:1400, 171:360]
-    img_cropped_2 = img[760:1400, 500:689]
-    img_cropped_3 = img[760:1400, 829:1018]
-
-    img_stacked = np.vstack([img_cropped_1, img_cropped_2, img_cropped_3])
-    # img_stacked = np.hstack([img_cropped_1, img_cropped_2, img_cropped_3])
-    return img_stacked
-
-
-def stack_image_2(img):
-    # img = img_min_thresholded
-    img_cropped_1 = img[776:1382 + 6, 116:360]
-    img_cropped_2 = img[776:1382 + 3, 445:689]
-    img_cropped_3 = img[776:1382 + 0, 774:1018]
-
-    img_stacked = np.vstack([img_cropped_1, img_cropped_2, img_cropped_3])
-    # plt.show(plt.imshow(img_stacked, 'gray'))
-    # img_stacked = np.hstack([img_cropped_1, img_cropped_2, img_cropped_3])
-    return img_stacked
-
-
-def stack_image_3(img):
-    # img = img_min_thresholded
-    img_cropped_1 = img[776:1382 + 6 + 6, 116:360]
-    img_cropped_2 = img[776:1382 + 3 + 8, 445:689]
-    img_cropped_3 = img[776:1382 + 0 + 5, 774:1018]
-
-    img_stacked = np.vstack([img_cropped_1, img_cropped_2, img_cropped_3])
-    # plt.show(plt.imshow(img_stacked, 'gray'))
-    # img_stacked = np.hstack([img_cropped_1, img_cropped_2, img_cropped_3])
+    img_stacked = np.vstack([
+        img[776:1392, 116:360],
+        img[776:1392, 445:689],
+        img[776:1392, 774:1018]])
     return img_stacked
 
 

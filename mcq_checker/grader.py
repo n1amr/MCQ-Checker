@@ -31,7 +31,7 @@ class Grader:
         if expected is not None and marks != expected:
             for i, ans in answers.items():
                 print(i, ans)
-            show_image(marked_img, complete=True)
-            show_image(img)
+            # show_image(marked_img, complete=True)
+            # show_image(img)
 
         return marks
