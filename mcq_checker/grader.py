@@ -3,9 +3,10 @@ import re
 
 import cv2
 
-from mcq_checker.img_processing import load_image, deskew_image, show_image
 from mcq_checker.model_answers import MODEL_ANSWERS
 from mcq_checker.naive_search import extract_answers
+from mcq_checker.utils.image import load_image, deskew_image, \
+    show_image
 
 
 def get_cached_path(img_path):

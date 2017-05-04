@@ -1,15 +1,12 @@
-import re
 import sys
 
 import pandas as pd
 
-from mcq_checker.csv_utils import load_csv, save_csv
 from mcq_checker.grader import Grader
+from mcq_checker.utils.csv import load_csv, save_csv
 
 img_model = None
 img_model_threshed = None
-
-
 
 
 def print_errors(errors):

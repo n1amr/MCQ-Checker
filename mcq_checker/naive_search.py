@@ -1,6 +1,6 @@
 import cv2
 
-from mcq_checker.img_processing import stack_image_3
+from mcq_checker.utils.image import stack_image_3
 
 
 def extract_answers(img):
