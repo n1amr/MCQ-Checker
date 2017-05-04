@@ -4,7 +4,7 @@ import cv2
 
 from mcq_checker.constants import MODEL_ANSWERS, get_cached_image_path
 from mcq_checker.deskewer import Deskewer
-from mcq_checker.naive_search import extract_answers
+from mcq_checker.detector import extract_answers
 from mcq_checker.utils.image import load_image
 
 
