@@ -3,7 +3,7 @@ import re
 
 import cv2
 
-from mcq_checker.model_answers import MODEL_ANSWERS
+from mcq_checker.constants import MODEL_ANSWERS
 from mcq_checker.naive_search import extract_answers
 from mcq_checker.utils.image import load_image, deskew_image, \
     show_image

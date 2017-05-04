@@ -2,8 +2,10 @@ import sys
 
 import pandas as pd
 
+from mcq_checker import constants
 from mcq_checker.grader import Grader
 from mcq_checker.utils.csv import load_csv, save_csv
+from mcq_checker.constants import get_train_image_path, get_test_image_path
 
 img_model = None
 img_model_threshed = None
@@ -15,11 +17,9 @@ def print_errors(errors):
 
 
 def train(grader, samples=None):
-    input_csv_file_path = 'data/train.csv'
-    train_set = pd.read_csv(input_csv_file_path)
-
-    output_csv_file_path = 'data/train-output.csv'
-    output_dataframe = load_csv(output_csv_file_path, continue_=False)
+    train_set = pd.read_csv(constants.TRAIN_INPUT_CSV_FILE_PATH)
+    output_dataframe = load_csv(constants.TRAIN_OUTPUT_CSV_FILE_PATH,
+                                continue_=False)
 
     errors = []
     i = -1
@@ -30,7 +30,7 @@ def train(grader, samples=None):
             if samples and (i not in samples):
                 continue
 
-            sample_file_path = f'data/dataset/train/{t.FileName}'
+            sample_file_path = get_train_image_path(t.FileName)
             expected_mark = t.Mark
             print(f'[{t.Index + 1:03}/{len(train_set):03}] '
                   f'{f"{t.Index / len(train_set) * 100:0.1f}":>5}%: '
@@ -40,7 +40,7 @@ def train(grader, samples=None):
                                        expected=expected_mark)
 
             output_dataframe.loc[t.Index] = [t.FileName, output_mark]
-            save_csv(output_dataframe, output_csv_file_path)
+            save_csv(output_dataframe, constants.TRAIN_OUTPUT_CSV_FILE_PATH)
 
             error = output_mark - expected_mark
             total_abs_error += abs(error)
@@ -59,15 +59,14 @@ def train(grader, samples=None):
 
 
 def test(grader):
-    input_csv_file_path = 'data/test.csv'
-    test_set = pd.read_csv(input_csv_file_path)
+    test_set = pd.read_csv(constants.TEST_INPUT_CSV_FILE_PATH)
 
-    output_csv_file_path = 'data/test-output.csv'
-    output_dataframe = load_csv(output_csv_file_path, continue_=False)
+    output_dataframe = load_csv(constants.TEST_OUTPUT_CSV_FILE_PATH,
+                                continue_=False)
 
     try:
         for t in test_set[['FileName']].itertuples():
-            sample_file_path = f'data/dataset/test/{t.FileName}'
+            sample_file_path = get_test_image_path(t.FileName)
             print(f'[{t.Index + 1:03}/{len(test_set):03}] '
                   f'{f"{t.Index / len(test_set) * 100:0.1f}":>5}%: '
                   f'{t.FileName:30}', end='', flush=True)
@@ -75,7 +74,7 @@ def test(grader):
             output_mark = grader.grade(sample_file_path)
 
             output_dataframe.loc[t.Index] = [t.FileName, output_mark]
-            save_csv(output_dataframe, output_csv_file_path)
+            save_csv(output_dataframe, constants.TEST_OUTPUT_CSV_FILE_PATH)
 
             print(f'Output = {output_mark:02}:')
 
@@ -92,8 +91,7 @@ def main(*args):
         print_usage()
         return 1
 
-    img_model_filename = 'data/model-answer.png'
-    grader = Grader(img_model_filename)
+    grader = Grader(constants.IMG_MODEL_FILE_PATH)
 
     if args[1] == 'train':
         samples = [*map(int, args[2:])]
