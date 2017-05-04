@@ -155,13 +155,24 @@ def test():
         pass
 
 
-def main(*argv):
-    # samples = [15, 39, 44, 45, 50, 53, 54, 68, 71, 80, 107, 118, 121, 122, 133,
-    #            149, 164, 169, 229, 245, 249, 251, 269, ]
-    # samples.sort()
-    # train(samples)
-    train()
-    test()
+def print_usage():
+    print('Usage: python -m mcq_checker <train [sample_numbers]|test>')
+
+
+def main(*args):
+    if len(args) < 2:
+        print_usage()
+        return 1
+
+    if args[1] == 'train':
+        samples = [*map(int, args[2:])]
+        samples.sort()
+        train(samples)
+    elif args[1] == 'test':
+        test()
+    else:
+        print_usage()
+        return 1
 
     return 0
 
