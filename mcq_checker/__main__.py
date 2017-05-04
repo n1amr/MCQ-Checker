@@ -37,7 +37,7 @@ def train(grader, samples=None):
                                    expected=expected_mark)
 
         output_dataframe.loc[t.Index] = [t.FileName, output_mark]
-        save_csv(output_dataframe, constants.TRAIN_OUTPUT_CSV_FILE_PATH)
+        save_csv(constants.TRAIN_OUTPUT_CSV_FILE_PATH, output_dataframe)
 
         error = output_mark - expected_mark
         total_abs_error += abs(error)
@@ -68,7 +68,7 @@ def test(grader):
         output_mark = grader.grade(sample_file_path)
 
         output_dataframe.loc[t.Index] = [t.FileName, output_mark]
-        save_csv(output_dataframe, constants.TEST_OUTPUT_CSV_FILE_PATH)
+        save_csv(constants.TEST_OUTPUT_CSV_FILE_PATH, output_dataframe)
 
         print(f'Output = {output_mark:02}:')
 

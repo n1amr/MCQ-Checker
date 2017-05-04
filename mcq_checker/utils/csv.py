@@ -10,6 +10,6 @@ def load_csv(path, continue_=True):
     return dataframe
 
 
-def save_csv(dataframe, path):
+def save_csv(path, dataframe):
     dataframe['Mark'] = dataframe['Mark'].astype('int8')
     dataframe.to_csv(path, index=False)
