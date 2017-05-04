@@ -4,7 +4,8 @@ import cv2
 
 from mcq_checker.constants import MODEL_ANSWERS, get_cached_image_path
 from mcq_checker.naive_search import extract_answers
-from mcq_checker.utils.image import load_image, show_image
+from mcq_checker.utils.image import load_image, show_image, stack_image, \
+    crop_image
 from mcq_checker.deskewer import Deskewer
 
 
@@ -14,6 +15,8 @@ class Grader:
         self.deskewer = Deskewer(self.img_model)
 
     def grade(self, img_path, expected=None):
+        # img = load_image(img_path)
+        # img = self.deskewer.deskew(img)
         cached_path = get_cached_image_path(img_path)
         if os.path.exists(cached_path):
             img = load_image(cached_path)

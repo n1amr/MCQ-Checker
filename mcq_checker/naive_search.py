@@ -1,16 +1,25 @@
 import cv2
 
-from mcq_checker.utils.image import stack_image
-
+from mcq_checker.utils.image import stack_image, show_image
+import numpy as np
 
 def extract_answers(img):
+    # img_stacked = np.vstack([
+    #     img[776:1392 - 15, 116:360],
+    #     img[776:1392 - 15, 445:689],
+    #     img[776:1392 - 15, 774:1018]])
+    # show_image(img_stacked , complete=True)
+    # show_image(stack_image(img), complete=True)
     img = stack_image(img)
+    # show_image(img)
 
     HEIGHT = 41
     N_QUESTIONS = 45
     answers = dict([(i + 1, '?') for i in range(N_QUESTIONS)])
     for i in range(N_QUESTIONS):
         img2 = img[i * HEIGHT: (i + 1) * HEIGHT, :]
+        # print(i)
+        # show_image(img2)
         choices = []
         for j in range(4):
             img3 = img2[:, 75 + 40 * j:105 + 40 * j]

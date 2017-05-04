@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def show_image(img, msg=None, unstack=False, complete=False):
+def show_image(img, msg=None, unstack=False, complete=True):
     n = img.shape[0]
     n3 = n // 3
     x = 5
@@ -44,10 +44,15 @@ def load_image(path):
 
 def stack_image(img):
     img_stacked = np.vstack([
-        img[776:1392, 116:360],
-        img[776:1392, 445:689],
-        img[776:1392, 774:1018]])
+        img[776:1392 , 116:360],
+        img[776:1392 , 445:689],
+        img[776:1392 , 774:1018]])
+    # show_image(img_stacked)
+    # err
     return img_stacked
+
+def crop_image(img):
+    return img[776:1392 + 300, 116:1018]
 
 
 def erode_image(img, kernel_size):
