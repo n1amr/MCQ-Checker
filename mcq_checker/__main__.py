@@ -41,7 +41,8 @@ def train(grader, samples=None):
 
         error = output_mark - expected_mark
         total_abs_error += abs(error)
-        print(f'Output = {output_mark:02}, Expected = {expected_mark:02}:'
+        print(f'Marks = {output_mark:02}, '
+              f'Expected = {expected_mark:02}:'
               f' {f"Error = {error}" if error != 0 else "OK":14}'
               f'Total absolute error = {total_abs_error:4}')
 
@@ -65,12 +66,11 @@ def test(grader):
               f'{f"{t.Index / len(test_set) * 100:0.1f}":>5}%: '
               f'{t.FileName:30}', end='', flush=True)
 
-        output_mark = grader.grade(sample_file_path)
+        mark = grader.grade(sample_file_path)
+        output_dataframe.loc[t.Index] = [t.FileName, mark]
 
-        output_dataframe.loc[t.Index] = [t.FileName, output_mark]
+        print(f'Marks = {mark:02}')
         save_csv(constants.TEST_OUTPUT_CSV_FILE_PATH, output_dataframe)
-
-        print(f'Output = {output_mark:02}:')
 
 
 def print_usage():
