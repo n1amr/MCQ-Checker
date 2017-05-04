@@ -50,6 +50,12 @@ def stack_image(img):
     return img_stacked
 
 
+def rotate_image(img, angle):
+    rotation_mat = cv2.getRotationMatrix2D((0, 0), angle, 1.0)
+    img = cv2.warpAffine(img, rotation_mat, img.T.shape)
+    return img
+
+
 def erode_image(img, kernel_size):
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
     img = cv2.erode(img, kernel)
