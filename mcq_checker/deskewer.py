@@ -1,10 +1,7 @@
 import math
 
 import cv2
-import numpy
 import numpy as np
-
-from mcq_checker.utils.image import show_image, crop_image
 
 
 class Deskewer:
@@ -15,18 +12,9 @@ class Deskewer:
         self.kp1, self.des1 = surf.detectAndCompute(self.img_model, None)
 
     def deskew(self, img):
-        # print()
-        # import IPython; IPython.embed()
-        # show_image(img)
-        # show_image(crop_image(img), 'original')
         img = self.horizontal_img(img)
-        # show_image(crop_image(img), 'horizontalized')
 
         big_circles_cntrs = self.extract_big_circles(img)
-
-        # print()
-        # print(self.model_centers, 'model centers')
-        # print(big_circles_cntrs, 'sample centers')
 
         shift_x = ((self.model_centers[0][0] - big_circles_cntrs[0][0]) +
                    (self.model_centers[1][0] - big_circles_cntrs[1][0])) / 2
@@ -36,9 +24,6 @@ class Deskewer:
         shift_y = int(shift_y)
         shift_x = int(shift_x)
 
-        # print('shift y = ', shift_y)
-        # print('shift x = ', shift_x)
-
         if shift_y < 0:
             img = img[-int(shift_y):, :]
         else:
@@ -46,7 +31,6 @@ class Deskewer:
                 np.zeros((shift_y, img.shape[1])),
                 img
             ])
-        # show_image(crop_image(img), 'shift y')
 
         if shift_x < 0:
             img = img[:, -int(shift_x):]
@@ -55,20 +39,8 @@ class Deskewer:
                 np.zeros((img.shape[0], shift_x)),
                 img
             ])
-        # show_image(crop_image(img), 'shift x')
-
-        # big_circles_cntrs = self.extract_big_circles(img)
-
-        # print(self.model_centers)
-        # print(big_circles_cntrs)
 
         img = img.astype('uint8')
-        # show_image(img)
-        # show_image(self.img_model)
-        # show_image(img[500:1500, :500])
-        # show_image(self.img_model[500:1500, :500])
-        # show_image(cv2.bitwise_or(img[500:1500, :500], self.img_model[500:1500, :500]))
-        # errrr
         return img
 
     def extract_big_circles(self, img):
@@ -97,17 +69,12 @@ class Deskewer:
             segment = img[y1:y2, x1:x2]
             if (6000 < area < 10000
                 and 0.7 * height < width < height * 1.4
-                and y1 > 1200
+                and y1 > img.shape[0] * 2 / 3
                 and segment.mean() > 150):
                 centers.append(((x1 + x2) / 2, (y1 + y2) / 2))
-                # show_image(img[y1:y2, x1:x2], complete=True)
-        print(len(centers))
+        assert len(centers) == 2
 
         centers.sort()
-        if not len(centers) == 2:
-            import IPython;
-            IPython.embed()
-        assert len(centers) == 2
         return centers
 
     def horizontal_img(self, img):
