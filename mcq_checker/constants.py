@@ -30,5 +30,5 @@ def get_test_image_path(filename):
 def get_cached_image_path(path):
     m = re.match(r'data/dataset/(?P<basename>.*)\.(?P<extension>\w+)', path)
 
-    path = f"data/dataset/cache/{m['basename']}_cached_2.{m['extension']}"
+    path = f"data/dataset/cache/{m['basename']}_cached.{m['extension']}"
     return path

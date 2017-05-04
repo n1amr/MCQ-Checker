@@ -70,8 +70,9 @@ class Deskewer:
             if (6000 < area < 10000
                 and 0.7 * height < width < height * 1.4
                 and y1 > img.shape[0] * 2 / 3
-                and segment.mean() > 150):
+                and segment.mean() > 120):
                 centers.append(((x1 + x2) / 2, (y1 + y2) / 2))
+
         assert len(centers) == 2
 
         centers.sort()

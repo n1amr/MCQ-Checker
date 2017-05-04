@@ -14,8 +14,6 @@ class Grader:
         self.deskewer = Deskewer(self.img_model)
 
     def grade(self, img_path, expected=None):
-        # img = load_image(img_path)
-        # img = self.deskewer.deskew(img)
         cached_path = get_cached_image_path(img_path)
         if os.path.exists(cached_path):
             img = load_image(cached_path)

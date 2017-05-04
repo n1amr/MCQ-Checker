@@ -4,14 +4,7 @@ from mcq_checker.utils.image import stack_image
 
 
 def extract_answers(img):
-    # img_stacked = np.vstack([
-    #     img[776:1392 - 15, 116:360],
-    #     img[776:1392 - 15, 445:689],
-    #     img[776:1392 - 15, 774:1018]])
-    # show_image(img_stacked , complete=True)
-    # show_image(stack_image(img), complete=True)
     img = stack_image(img)
-    # show_image(img)
 
     HEIGHT = 41
     N_QUESTIONS = 45
