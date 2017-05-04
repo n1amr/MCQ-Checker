@@ -5,14 +5,16 @@ import numpy as np
 
 
 class Deskewer:
-    def __init__(self):
+    def __init__(self, img_original):
         self.kp1, self.des1 = None, None
+        surf = cv2.xfeatures2d.SURF_create(400)
+        self.kp1, self.des1 = surf.detectAndCompute(img_original, None)
 
     def deskew_image(self, img_original, img_skewed, debug=False):
         surf = cv2.xfeatures2d.SURF_create(400)
 
-        if self.kp1 is None:
-            self.kp1, self.des1 = surf.detectAndCompute(img_original, None)
+        assert self.kp1 is not None
+
         kp2, des2 = surf.detectAndCompute(img_skewed, None)
 
         # FLANN_INDEX_KDTREE = 0

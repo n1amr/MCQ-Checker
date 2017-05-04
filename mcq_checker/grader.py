@@ -11,7 +11,7 @@ from mcq_checker.deskewer import Deskewer
 class Grader:
     def __init__(self, img_model_filename):
         self.img_model = load_image(img_model_filename)
-        self.deskewer = Deskewer()
+        self.deskewer = Deskewer(self.img_model)
 
     def grade(self, img_path, expected=None):
         cached_path = get_cached_image_path(img_path)
