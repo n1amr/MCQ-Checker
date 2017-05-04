@@ -5,6 +5,8 @@ import sys
 import cv2
 import pandas as pd
 
+from mcq_checker.csv_utils import load_csv, save_csv
+from mcq_checker.model_answers import MODEL_ANSWERS
 from .img_processing import (
     show_image,
     load_image,
@@ -14,16 +16,6 @@ from .naive_search import extract_answers
 
 img_model = None
 img_model_threshed = None
-
-MODEL_ANSWERS = {1: 'B', 2: 'C', 3: 'A', 4: 'A', 5: 'D',
-                 6: 'A', 7: 'C', 8: 'C', 9: 'A', 10: 'C',
-                 11: 'A', 12: 'B', 13: 'C', 14: 'C', 15: 'B',
-                 16: 'A', 17: 'D', 18: 'B', 19: 'C', 20: 'B',
-                 21: 'D', 22: 'C', 23: 'D', 24: 'B', 25: 'D',
-                 26: 'C', 27: 'D', 28: 'D', 29: 'B', 30: 'C',
-                 31: 'B', 32: 'B', 33: 'D', 34: 'C', 35: 'B',
-                 36: 'C', 37: 'B', 38: 'C', 39: 'C', 40: 'A',
-                 41: 'B', 42: 'B', 43: 'C', 44: 'C', 45: 'B', }
 
 
 def get_cached_path(img_path):
@@ -63,18 +55,6 @@ def calculate_marks(img_model_filename, img_sample_filename, expected=None):
         show_image(img)
 
     return score
-
-
-def load_csv(path, continue_=True):
-    dataframe = pd.DataFrame(columns=['FileName', 'Mark'])
-    if os.path.exists(path) and continue_:
-        dataframe = pd.read_csv(path)
-    return dataframe
-
-
-def save_csv(dataframe, path):
-    dataframe['Mark'] = dataframe['Mark'].astype('int8')
-    dataframe.to_csv(path, index=False)
 
 
 def print_errors(errors):
