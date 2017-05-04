@@ -19,37 +19,37 @@ def train(grader, samples=None):
                                 continue_=False)
 
     errors = []
-    i = -1
     total_abs_error = 0
 
+    i = -1
     for t in train_set[['FileName', 'Mark']].itertuples():
         i += 1
         if samples and (i not in samples):
             continue
 
-        sample_file_path = get_train_image_path(t.FileName)
-        expected_mark = t.Mark
+        img_path = get_train_image_path(t.FileName)
         print(f'[{t.Index + 1:03}/{len(train_set):03}] '
               f'{f"{t.Index / len(train_set) * 100:0.1f}":>5}%: '
               f'{t.FileName:30}', end='', flush=True)
 
-        output_mark = grader.grade(sample_file_path,
-                                   expected=expected_mark)
+        expected = t.Mark
+        output = grader.grade(img_path, expected=expected)
 
-        output_dataframe.loc[t.Index] = [t.FileName, output_mark]
+        output_dataframe.loc[t.Index] = [t.FileName, output]
         save_csv(constants.TRAIN_OUTPUT_CSV_FILE_PATH, output_dataframe)
 
-        error = output_mark - expected_mark
+        error = output - expected
         total_abs_error += abs(error)
-        print(f'Marks = {output_mark:02}, '
-              f'Expected = {expected_mark:02}:'
+        print(f'Marks = {output:02}, '
+              f'Expected = {expected:02}:'
               f' {f"Error = {error}" if error != 0 else "OK":14}'
               f'Total absolute error = {total_abs_error:4}')
 
         if error != 0:
-            errors.append({'id': i, 'filename': sample_file_path,
-                           'expected': expected_mark, 'mark': output_mark})
-            print_errors(errors)
+            errors.append({'id': i,
+                           'filename': img_path,
+                           'expected': expected,
+                           'mark': output})
 
     print_errors(errors)
 
@@ -66,10 +66,10 @@ def test(grader):
               f'{f"{t.Index / len(test_set) * 100:0.1f}":>5}%: '
               f'{t.FileName:30}', end='', flush=True)
 
-        mark = grader.grade(sample_file_path)
-        output_dataframe.loc[t.Index] = [t.FileName, mark]
+        output = grader.grade(sample_file_path)
+        output_dataframe.loc[t.Index] = [t.FileName, output]
 
-        print(f'Marks = {mark:02}')
+        print(f'Marks = {output:02}')
         save_csv(constants.TEST_OUTPUT_CSV_FILE_PATH, output_dataframe)
 
 
