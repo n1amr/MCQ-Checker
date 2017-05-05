@@ -5,29 +5,33 @@ from mcq_checker.utils.image import stack_image
 
 def extract_answers(img):
     img = stack_image(img)
+    img = cv2.bitwise_not(img)
+    img = cv2.threshold(img, 50, 255, cv2.THRESH_TOZERO)[1]
 
-    HEIGHT = 41
+    LENGTH = 41
     N_QUESTIONS = 45
+    N_CHOICES = 4
     answers = dict([(i + 1, '?') for i in range(N_QUESTIONS)])
     for i in range(N_QUESTIONS):
-        img2 = img[i * HEIGHT: (i + 1) * HEIGHT, :]
-        choices = []
-        for j in range(4):
-            img3 = img2[:, 75 + 40 * j:105 + 40 * j]
-            img3 = cv2.bitwise_not(img3)
-            img3 = cv2.threshold(img3, 50, 255, cv2.THRESH_TOZERO)[1]
-            avg = img3.sum() / (25 * 23)
-            choices.append(round(avg))
-        avg = (sum(choices) - 4 * min(choices)) / len(choices)
+        img_question = img[i * LENGTH: (i + 1) * LENGTH, 75:]
+
         d = []
-        for k in range(4):
-            d.append((choices[k], k))
+        avgs = []
+        for j in range(N_CHOICES):
+            img_choice = img_question[:, LENGTH * j:LENGTH * (j + 1)]
+            choice_avg = round(img_choice.sum() / (LENGTH ** 2 / 2))
+            avgs.append(choice_avg)
+            d.append((choice_avg, j))
+
+        avg = (sum(avgs) - N_CHOICES * min(avgs)) / N_CHOICES
+
         d.sort(reverse=True)
+
         if d[0][0] > 1.05 * d[3][0] and (
                     d[0][0] - avg) > 1.5 * (d[1][0] - avg):
             ind = d[0][1]
             answers[i + 1] = 'ABCD'[ind]
-            img[i * HEIGHT: (i + 1) * HEIGHT,
-            75 + 40 * ind:105 + 40 * ind] = 255
+            img[i * LENGTH: (i + 1) * LENGTH,
+            75 + LENGTH * ind:105 + LENGTH * ind] = 255
 
     return answers, img
