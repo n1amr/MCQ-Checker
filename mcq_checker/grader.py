@@ -13,7 +13,7 @@ class Grader:
         self.img_model = load_image(img_model_filename)
         self.deskewer = Deskewer(self.img_model)
 
-    def grade(self, img_path, expected=None):
+    def grade(self, img_path):
         cached_path = get_cached_image_path(img_path)
         if os.path.exists(cached_path):
             img = load_image(cached_path)

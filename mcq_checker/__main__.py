@@ -33,7 +33,7 @@ def train(grader, samples=None):
               f'{t.FileName:30}', end='', flush=True)
 
         expected = t.Mark
-        output = grader.grade(img_path, expected=expected)
+        output = grader.grade(img_path)
 
         output_dataframe.loc[t.Index] = [t.FileName, output]
         save_csv(constants.TRAIN_OUTPUT_CSV_FILE_PATH, output_dataframe)
