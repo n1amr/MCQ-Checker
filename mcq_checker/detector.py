@@ -31,7 +31,5 @@ def extract_answers(img):
                     d[0][0] - avg) > 1.5 * (d[1][0] - avg):
             ind = d[0][1]
             answers[i + 1] = 'ABCD'[ind]
-            img[i * LENGTH: (i + 1) * LENGTH,
-            75 + LENGTH * ind:105 + LENGTH * ind] = 255
 
-    return answers, img
+    return answers

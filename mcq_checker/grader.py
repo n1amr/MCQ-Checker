@@ -22,18 +22,12 @@ class Grader:
             img = self.deskewer.deskew(img)
             cv2.imwrite(cached_path, img)
 
-        answers, marked_img = extract_answers(img)
+        answers = extract_answers(img)
 
         marks = 0
         for i in range(1, 46):
             c = answers[i]
             if c is not None and c == MODEL_ANSWERS[i]:
                 marks += 1
-
-        if expected is not None and marks != expected:
-            for i, ans in answers.items():
-                print(i, ans)
-                # show_image(marked_img, complete=True)
-                # show_image(img)
 
         return marks
