@@ -1,4 +1,21 @@
 import re
+import os
+
+
+def build_file_structure():
+    dirs = [
+        'data/',
+        'data/dataset',
+        'data/dataset/train',
+        'data/dataset/test',
+        'data/dataset/cache/train',
+        'data/dataset/cache/test',
+    ]
+    for dir in dirs:
+        os.makedirs(dir, exist_ok=True)
+
+
+build_file_structure()
 
 IMG_MODEL_FILE_PATH = 'data/model-answer.png'
 

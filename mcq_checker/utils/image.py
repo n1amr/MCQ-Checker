@@ -1,3 +1,5 @@
+import os
+
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
@@ -39,6 +41,10 @@ def show_image(img, msg=None, unstack=False, complete=True):
 
 
 def load_image(path):
+    if not os.path.exists(path):
+        raise FileNotFoundError(f'Image file is not found in '
+                                f'{os.path.abspath(path)}')
+
     return cv2.imread(path, cv2.IMREAD_GRAYSCALE)
 
 
