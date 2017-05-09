@@ -1,2 +1,3 @@
-*
-!.gitignore
+dataset/
+train.zip
+test.zip
